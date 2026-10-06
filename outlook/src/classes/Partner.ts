@@ -3,8 +3,7 @@ import EnrichmentInfo from './EnrichmentInfo';
 import Lead from './Lead';
 import HelpdeskTicket from './HelpdeskTicket';
 import Task from './Task';
-import SaleOrder from './SaleOrder';
-import PurchaseOrder from './PurchaseOrder';
+import ExtraRecord from './ExtraRecord';
 
 /***
  * id value for partners which have not been yet added to a Odoo database
@@ -25,8 +24,8 @@ class Partner {
     leads?: Lead[];
     tasks?: Task[];
     tickets?: HelpdeskTicket[];
-    saleOrders?: SaleOrder[];
-    purchaseOrders?: PurchaseOrder[];
+    // sections supplémentaires (voir extraSections.ts), par clé serveur
+    extra?: { [key: string]: ExtraRecord[] } = {};
     isCompany: boolean;
     canWriteOnPartner: boolean;
 

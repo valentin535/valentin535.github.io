@@ -15,10 +15,9 @@ import Lead from '../../../../classes/Lead';
 import HelpdeskTicket from '../../../../classes/HelpdeskTicket';
 import SectionTasks from '../../SectionTasks/SectionTasks';
 import Task from '../../../../classes/Task';
-import SaleOrder from '../../../../classes/SaleOrder';
-import PurchaseOrder from '../../../../classes/PurchaseOrder';
-import SectionSaleOrders from '../../SectionSaleOrders/SectionSaleOrders';
-import SectionPurchaseOrders from '../../SectionPurchaseOrders/SectionPurchaseOrders';
+import ExtraRecord from '../../../../classes/ExtraRecord';
+import { EXTRA_SECTIONS } from '../../../../classes/extraSections';
+import SectionExtra from '../../SectionExtra/SectionExtra';
 
 type ContactPageProps = {
     partner: Partner;
@@ -80,11 +79,11 @@ class ContactPage extends React.Component<ContactPageProps, ContactPageState> {
                         HelpdeskTicket.fromJSON(ticket_json),
                     );
                 }
-                if (parsed.result.sale_orders) {
-                    newPartner.saleOrders = parsed.result.sale_orders.map((o) => SaleOrder.fromJSON(o));
-                }
-                if (parsed.result.purchase_orders) {
-                    newPartner.purchaseOrders = parsed.result.purchase_orders.map((o) => PurchaseOrder.fromJSON(o));
+                newPartner.extra = {};
+                for (const section of EXTRA_SECTIONS) {
+                    if (parsed.result[section.key]) {
+                        newPartner.extra[section.key] = parsed.result[section.key].map((o) => ExtraRecord.fromJSON(o));
+                    }
                 }
                 if (parsed.result.user_companies) {
                     this.context.setUserCompanies(parsed.result.user_companies);
@@ -128,14 +127,6 @@ class ContactPage extends React.Component<ContactPageProps, ContactPageState> {
         return this.props.partner.tickets !== undefined;
     };
 
-    private isSaleInstalled = (): boolean => {
-        return this.props.partner.saleOrders !== undefined;
-    };
-
-    private isPurchaseInstalled = (): boolean => {
-        return this.props.partner.purchaseOrders !== undefined;
-    };
-
     private propagatePartnerInfoChange = (partner: Partner) => {
         this.setState({ partner: partner });
         this.props.onPartnerChanged(partner);
@@ -173,13 +164,16 @@ class ContactPage extends React.Component<ContactPageProps, ContactPageState> {
             <SectionTickets partner={this.state.partner} canCreatePartner={this.state.canCreatePartner} />
         );
 
-        const saleOrdersList = this.isSaleInstalled() && (
-            <SectionSaleOrders partner={this.state.partner} canCreatePartner={this.state.canCreatePartner} />
-        );
-
-        const purchaseOrdersList = this.isPurchaseInstalled() && (
-            <SectionPurchaseOrders partner={this.state.partner} canCreatePartner={this.state.canCreatePartner} />
-        );
+        const extraSectionsList = EXTRA_SECTIONS.filter(
+            (section) => this.props.partner.extra && this.props.partner.extra[section.key] !== undefined,
+        ).map((section) => (
+            <SectionExtra
+                key={section.key}
+                config={section}
+                partner={this.state.partner}
+                canCreatePartner={this.state.canCreatePartner}
+            />
+        ));
 
         const onItemClick = this.props.partner.isAddedToDatabase() ? this.viewContact : null;
 
@@ -195,13 +189,12 @@ class ContactPage extends React.Component<ContactPageProps, ContactPageState> {
                 {leadsList}
                 {tasksList}
                 {ticketsList}
-                {saleOrdersList}
-                {purchaseOrdersList}
+                {extraSectionsList}
                 <CompanySection
                     partner={this.state.partner}
                     canCreatePartner={this.state.canCreatePartner}
                     onPartnerInfoChanged={this.propagatePartnerInfoChange}
-                    hideCollapseButton={!leadsList && !tasksList && !ticketsList && !saleOrdersList && !purchaseOrdersList}
+                    hideCollapseButton={!leadsList && !tasksList && !ticketsList && extraSectionsList.length === 0}
                 />
             </div>
         );
