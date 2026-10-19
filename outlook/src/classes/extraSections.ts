@@ -54,4 +54,11 @@ export const EXTRA_SECTIONS: ExtraSectionConfig[] = [
         noRecord: 'Aucune fiche employé pour ce contact.',
         msgLogEmail: 'Consigner le mail sur cette fiche employé',
     },
+    {
+        key: 'receipt_batches',
+        model: 'stock.picking.batch',
+        title: 'Réceptions par lot',
+        noRecord: 'Aucune réception par lot pour ce contact.',
+        msgLogEmail: 'Consigner le mail sur ce transfert par lot',
+    },
 ];
